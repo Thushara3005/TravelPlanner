@@ -11,12 +11,24 @@ async function request(method, url, body) {
   return data;
 }
 
-export function getTrips({ search = "", status = "" } = {}) {
+
+export function getTrips({
+  search = "",
+  status = "",
+  page,
+  limit,
+} = {}) {
   const params = new URLSearchParams();
+
   if (search) params.set("search", search);
   if (status) params.set("status", status);
+
+  if (page !== undefined) params.set("page", String(page));
+  if (limit !== undefined) params.set("limit", String(limit));
+
   return request("GET", `/api/trips?${params}`);
 }
+
 
 export function getTrip(id) {
   return request("GET", `/api/trips/${id}`);
