@@ -90,7 +90,21 @@ export default function TripDetailsPage() {
       <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{trip.name}</h1>
-          <p className="text-gray-600">{trip.destination}</p>
+          <div className="mt-1 flex flex-wrap gap-2">
+            {(Array.isArray(trip.destinations) && trip.destinations.length > 0
+              ? trip.destinations
+              : trip.destination
+                ? [trip.destination]
+                : []
+            ).map((destination, index) => (
+              <span
+                key={`${destination}-${index}`}
+                className="rounded-full bg-blue-50 px-3 py-1 text-sm text-blue-700"
+              >
+                {index + 1}. {destination}
+              </span>
+            ))}
+          </div>
         </div>
         <div className="flex gap-3">
           <Link to={`/trips/${id}/edit`} className="rounded border border-gray-300 px-4 py-2 text-sm">

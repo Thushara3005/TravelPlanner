@@ -13,7 +13,13 @@ CREATE TABLE IF NOT EXISTS trips (
     description TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
+CREATE TABLE IF NOT EXISTS trip_destinations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    trip_id INTEGER NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
+    destination TEXT NOT NULL,
+    position INTEGER NOT NULL,
+    UNIQUE (trip_id, position)
+);
 CREATE TABLE IF NOT EXISTS activities (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     trip_id INTEGER NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
@@ -44,5 +50,21 @@ def close_db(error=None):
 
 def init_db(path):
     db = sqlite3.connect(path)
+    db.execute("PRAGMA foreign_keys = ON")
     db.executescript(SCHEMA)
+
+    # Preserve existing trips by migrating their original destination.
+    db.execute("""
+        INSERT INTO trip_destinations (trip_id, destination, position)
+        SELECT trips.id, trips.destination, 0
+        FROM trips
+        WHERE TRIM(trips.destination) != ''
+          AND NOT EXISTS (
+              SELECT 1
+              FROM trip_destinations
+              WHERE trip_destinations.trip_id = trips.id
+          )
+    """)
+
+    db.commit()
     db.close()
